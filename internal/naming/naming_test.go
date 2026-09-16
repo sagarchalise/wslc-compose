@@ -9,8 +9,8 @@ func TestSanitize(t *testing.T) {
 		"My Project!!":  "my-project",
 		"---leading":    "leading",
 		"trailing---":   "trailing",
-		"":               "wslc-compose",
-		"Ünïcode Stuff":  "n-code-stuff",
+		"":              "wslc-compose",
+		"Ünïcode Stuff": "n-code-stuff",
 	}
 	for in, want := range cases {
 		if got := Sanitize(in); got != want {

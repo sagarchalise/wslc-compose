@@ -1,5 +1,5 @@
 param(
-    [string]$GoImage = "golang:1.23",
+    [string]$GoImage = "golang:1.24",
     [string]$Output = "wslc-compose.exe"
 )
 

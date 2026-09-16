@@ -3,8 +3,9 @@ package compose
 import (
 	"os"
 	"path/filepath"
-	"runtime"
 	"testing"
+
+	ctypes "github.com/compose-spec/compose-go/v2/types"
 )
 
 func writeCompose(t *testing.T, dir, content string) string {
@@ -230,9 +231,9 @@ services:
 	}
 }
 
-func TestResolveVolumeMountNamedVolume(t *testing.T) {
+func TestFormatVolumeNamedVolume(t *testing.T) {
 	volumes := map[string]Volume{"data": {Key: "data", Name: "proj-data"}}
-	got, err := resolveVolumeMount("data:/var/lib/data", `C:\compose\dir`, volumes)
+	got, err := formatVolume(ctypes.ServiceVolumeConfig{Type: ctypes.VolumeTypeVolume, Source: "data", Target: "/var/lib/data"}, volumes)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -241,35 +242,9 @@ func TestResolveVolumeMountNamedVolume(t *testing.T) {
 	}
 }
 
-func TestResolveVolumeMountWindowsDriveLetter(t *testing.T) {
-	if runtime.GOOS != "windows" {
-		t.Skip("drive-letter path semantics only apply on windows")
-	}
-	volumes := map[string]Volume{}
-	got, err := resolveVolumeMount(`C:\host\path:/data:ro`, `C:\compose\dir`, volumes)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if got != `C:\host\path:/data:ro` {
-		t.Errorf("got %q", got)
-	}
-}
-
-func TestResolveVolumeMountRelativeHostPath(t *testing.T) {
-	volumes := map[string]Volume{}
-	dir := t.TempDir()
-	got, err := resolveVolumeMount("./data:/data", dir, volumes)
-	if err != nil {
-		t.Fatal(err)
-	}
-	want := filepath.Clean(filepath.Join(dir, "data")) + ":/data"
-	if got != want {
-		t.Errorf("got %q, want %q", got, want)
-	}
-}
-
-func TestResolveVolumeMountUndefinedNamedVolume(t *testing.T) {
-	if _, err := resolveVolumeMount("ghost:/data", t.TempDir(), map[string]Volume{}); err == nil {
+func TestFormatVolumeUndefinedNamedVolume(t *testing.T) {
+	_, err := formatVolume(ctypes.ServiceVolumeConfig{Type: ctypes.VolumeTypeVolume, Source: "ghost", Target: "/data"}, map[string]Volume{})
+	if err == nil {
 		t.Fatal("expected an error for an undeclared volume reference")
 	}
 }
